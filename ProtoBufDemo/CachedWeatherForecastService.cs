@@ -9,12 +9,12 @@ namespace ProtoBufDemo
     {
         private readonly ISerializer<WeatherForecast, T> _weatherForecastSerializer;
         private readonly IStorage<DateTime, T> _weatherForecastStorage;
-        private readonly WeatherForecastService _weatherForecastService;
+        private readonly IWeatherForecastAsyncProvider _weatherForecastService;
 
         public CachedWeatherForecastService(
             ISerializer<WeatherForecast, T> weatherForecastSerializer,
             IStorage<DateTime, T> weatherForecastStorage,
-            WeatherForecastService weatherForecastService)
+            IWeatherForecastAsyncProvider weatherForecastService)
         {
             _weatherForecastSerializer = weatherForecastSerializer;
             _weatherForecastStorage = weatherForecastStorage;
