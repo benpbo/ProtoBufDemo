@@ -5,15 +5,15 @@ using System.Threading.Tasks;
 
 namespace ProtoBufDemo
 {
-    public class CachedWeatherForecastService : IWeatherForecastAsyncProvider
+    public class CachedWeatherForecastService<T> : IWeatherForecastAsyncProvider
     {
-        private readonly ISerializer<WeatherForecast, string> _weatherForecastSerializer;
-        private readonly IStorage<DateTime, string> _weatherForecastStorage;
+        private readonly ISerializer<WeatherForecast, T> _weatherForecastSerializer;
+        private readonly IStorage<DateTime, T> _weatherForecastStorage;
         private readonly WeatherForecastService _weatherForecastService;
 
         protected CachedWeatherForecastService(
-            ISerializer<WeatherForecast, string> weatherForecastSerializer,
-            IStorage<DateTime, string> weatherForecastStorage,
+            ISerializer<WeatherForecast, T> weatherForecastSerializer,
+            IStorage<DateTime, T> weatherForecastStorage,
             WeatherForecastService weatherForecastService)
         {
             _weatherForecastSerializer = weatherForecastSerializer;
@@ -23,8 +23,8 @@ namespace ProtoBufDemo
 
         public async Task<WeatherForecast> GetForecastAsync(DateTime forecastDate)
         {
-            string cachedWeatherForecast = await _weatherForecastStorage.Retrieve(forecastDate);
-            if (!string.IsNullOrEmpty(cachedWeatherForecast))
+            T cachedWeatherForecast = await _weatherForecastStorage.Retrieve(forecastDate);
+            if (cachedWeatherForecast.Equals(default(T)))
             {
                 return _weatherForecastSerializer.Deserialize(cachedWeatherForecast);
             }
