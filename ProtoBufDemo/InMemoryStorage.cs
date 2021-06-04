@@ -1,13 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ProtoBufDemo.Abstractions;
 
 namespace ProtoBufDemo
 {
-    public class StringStorage : IStorage<string, string>
+    public class StringStorage<K, V> : IStorage<K, V>
     {
-        private readonly IDictionary<string, string> data = new Dictionary<string, string>();
+        private readonly IDictionary<K, V> data = new Dictionary<K, V>();
 
         private readonly int _storeDelay;
         private readonly int _retrieveDelay;
@@ -18,13 +17,13 @@ namespace ProtoBufDemo
            _retrieveDelay = retrieveDelay;
         }
 
-        public async Task<string> Retrieve(string key)
+        public async Task<V> Retrieve(K key)
         {
             await Task.Delay(_retrieveDelay);
-            return data.TryGetValue(key, out string value) ? value : null;
+            return data.TryGetValue(key, out V value) ? value : default;
         }
 
-        public async Task Store(string key, string value)
+        public async Task Store(K key, V value)
         {
             await Task.Delay(_storeDelay);
             data[key] = value;
