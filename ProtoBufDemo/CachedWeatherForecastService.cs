@@ -11,7 +11,7 @@ namespace ProtoBufDemo
         private readonly IStorage<DateTime, T> _weatherForecastStorage;
         private readonly WeatherForecastService _weatherForecastService;
 
-        protected CachedWeatherForecastService(
+        public CachedWeatherForecastService(
             ISerializer<WeatherForecast, T> weatherForecastSerializer,
             IStorage<DateTime, T> weatherForecastStorage,
             WeatherForecastService weatherForecastService)
