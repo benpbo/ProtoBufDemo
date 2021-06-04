@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace ProtoBufDemo
+namespace ProtoBufDemo.Abstractions
 {
     public interface IStorage<K, V>
     {

@@ -1,7 +1,8 @@
 using System;
 using System.Threading.Tasks;
+using ProtoBufDemo.DTOs;
 
-namespace ProtoBufDemo
+namespace ProtoBufDemo.Abstractions
 {
     public interface IWeatherForecastAsyncProvider
     {
