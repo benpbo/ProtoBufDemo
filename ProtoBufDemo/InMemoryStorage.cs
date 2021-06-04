@@ -4,14 +4,14 @@ using ProtoBufDemo.Abstractions;
 
 namespace ProtoBufDemo
 {
-    public class StringStorage<K, V> : IStorage<K, V>
+    public class InMemoryStorage<K, V> : IStorage<K, V>
     {
         private readonly IDictionary<K, V> data = new Dictionary<K, V>();
 
         private readonly int _storeDelay;
         private readonly int _retrieveDelay;
 
-        public StringStorage(int storeDelay, int retrieveDelay)
+        public InMemoryStorage(int storeDelay, int retrieveDelay)
         {
            _storeDelay = storeDelay;
            _retrieveDelay = retrieveDelay;
