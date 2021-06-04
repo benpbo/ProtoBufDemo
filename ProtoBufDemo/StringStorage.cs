@@ -21,8 +21,7 @@ namespace ProtoBufDemo
         public async Task<string> Retrieve(string key)
         {
             await Task.Delay(_retrieveDelay);
-            return data.TryGetValue(key, out string value) ?
-                value : throw new InvalidOperationException("Key not found in storage");
+            return data.TryGetValue(key, out string value) ? value : null;
         }
 
         public async Task Store(string key, string value)
