@@ -33,18 +33,54 @@ namespace ProtoBufDemo
             };
 
             string jsonString = jsonSerializer.Serialize(weatherForecast);
-            byte[] byteArray = protoBufSerializer.Serialize(weatherForecast);
-            var deserializedJsonWeatherForecast = jsonSerializer.Deserialize(jsonString);
-            var deserializedProtoBufWeatherForecast = protoBufSerializer.Deserialize(byteArray);
+            WeatherForecast deserializedJsonWeatherForecast = jsonSerializer.Deserialize(jsonString);
+            byte[] protoBufbyteArray = protoBufSerializer.Serialize(weatherForecast);
+            WeatherForecast deserializedProtoBufWeatherForecast = protoBufSerializer.Deserialize(protoBufbyteArray);
+
+            TimeSpan jsonSerializationTime = program.TestSerializationTime(jsonSerializer, weatherForecast);
+            TimeSpan jsonDeserializationTime = program.TestDeserializationTime(jsonSerializer, jsonString);
+            TimeSpan protoBufSerializationTime = program.TestSerializationTime(protoBufSerializer, weatherForecast);
+            TimeSpan protoBufDeserializationTime = program.TestDeserializationTime(protoBufSerializer, protoBufbyteArray);
+
             TimeSpan jsonCachedServiceExecutionTime = program.TestWeatherForecastService(jsonCachedService);
             TimeSpan protoBufCachedServiceExecutionTime = program.TestWeatherForecastService(protoCachedService);
 
             outputBuilder.AppendLine($"Serialized Json size: {program.GetStringSize(jsonString)}")
-                         .AppendLine($"Serialized ProtoBuf size: {program.GetByteArraySize(byteArray)}")
+                         .AppendLine($"Serialized ProtoBuf size: {program.GetByteArraySize(protoBufbyteArray)}")
+                         .AppendLine($"Json serialization time: {jsonSerializationTime}")
+                         .AppendLine($"ProtoBuf serialization time: {protoBufSerializationTime}")
+                         .AppendLine($"Json deserialization time: {jsonDeserializationTime}")
+                         .AppendLine($"ProtoBuf deserialization time: {protoBufDeserializationTime}")
                          .AppendLine($"Deserialized values equal: {deserializedJsonWeatherForecast.Equals(deserializedProtoBufWeatherForecast)}")
                          .AppendLine($"Json caching execution time: {jsonCachedServiceExecutionTime}")
                          .AppendLine($"ProtoBuf caching execution time: {protoBufCachedServiceExecutionTime}");
             Console.WriteLine(outputBuilder);
+        }
+
+        public TimeSpan TestSerializationTime<T>(ISerializer<WeatherForecast, T> serializer, WeatherForecast weatherForecast)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            for (int i = 0; i < ROUNDS_IN_TEST; i++)
+            {
+                serializer.Serialize(weatherForecast);
+            }
+
+            stopwatch.Stop();
+            return stopwatch.Elapsed;
+        }
+
+        private TimeSpan TestDeserializationTime<T>(ISerializer<WeatherForecast, T> serializer, T serialized)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            for (int i = 0; i < ROUNDS_IN_TEST; i++)
+            {
+                serializer.Deserialize(serialized);
+            }
+
+            stopwatch.Stop();
+            return stopwatch.Elapsed;
         }
 
         public TimeSpan TestWeatherForecastService(IWeatherForecastAsyncProvider service)
