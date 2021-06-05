@@ -17,18 +17,26 @@ namespace ProtoBufDemo
             _retrieveDelay = retrieveDelay;
         }
 
-        public CachedWeatherForecastService<string> CreateJsonCachedService() => new CachedWeatherForecastService<string>(
-                new JsonSerializer<WeatherForecast>(),
-                CreateStorage<string>(),
-                CreateWeatherForecastProvider());
+        public CachedWeatherForecastService<string> CreateJsonCachedService()
+        {
+            return CreateCachedService<string>(new JsonSerializer<WeatherForecast>());
+        }
 
-        public CachedWeatherForecastService<byte[]> CreateProtoBufCachedService() => new CachedWeatherForecastService<byte[]>(
-                new ProtoBufSerializer<WeatherForecast>(),
-                CreateStorage<byte[]>(),
-                CreateWeatherForecastProvider());
+        public CachedWeatherForecastService<byte[]> CreateProtoBufCachedService()
+        {
+            return CreateCachedService<byte[]>(new ProtoBufSerializer<WeatherForecast>());
+        }
 
-        private IWeatherForecastAsyncProvider CreateWeatherForecastProvider() => new WeatherForecastService(_forecastCreationDelay);
+        public CachedWeatherForecastService<T> CreateCachedService<T>(ISerializer<WeatherForecast, T> serializer) where T : class
+        {
+            return new CachedWeatherForecastService<T>(
+                serializer,
+                CreateStorage<T>(),
+                CreateWeatherForecastProvider());
+        }
 
         private IStorage<DateTime, T> CreateStorage<T>() => new InMemoryStorage<DateTime, T>(_storeDelay, _retrieveDelay);
+
+        private IWeatherForecastAsyncProvider CreateWeatherForecastProvider() => new WeatherForecastService(_forecastCreationDelay);
     }
 }
