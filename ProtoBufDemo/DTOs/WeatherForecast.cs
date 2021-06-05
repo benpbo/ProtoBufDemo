@@ -16,5 +16,15 @@ namespace ProtoBufDemo.DTOs
 
         [ProtoMember(3)]
         public WeatherForecastSummary Summary { get; set; }
+
+        public override bool Equals(object obj) => obj switch
+        {
+            WeatherForecast otherWeatherForecast => otherWeatherForecast.Date == Date
+                                                    && otherWeatherForecast.TemperatureC == TemperatureC
+                                                    && otherWeatherForecast.Summary == Summary,
+            _ => false
+        };
+
+        public override int GetHashCode() => base.GetHashCode();
     }
 }
