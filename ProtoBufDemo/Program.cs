@@ -15,6 +15,10 @@ namespace ProtoBufDemo
         public static void Main()
         {
             var program = new Program();
+            program.Start();
+        }
+
+        public void Start() {
             Bootstrap bootstrap = new Bootstrap(FORECAST_CREATION_DELAY);
 
             JsonSerializer<WeatherForecast> jsonSerializer = bootstrap.CreateJsonSerializer();
@@ -37,16 +41,16 @@ namespace ProtoBufDemo
             byte[] protoBufbyteArray = protoBufSerializer.Serialize(weatherForecast);
             WeatherForecast deserializedProtoBufWeatherForecast = protoBufSerializer.Deserialize(protoBufbyteArray);
 
-            TimeSpan jsonSerializationTime = program.TestSerializationTime(jsonSerializer, weatherForecast);
-            TimeSpan jsonDeserializationTime = program.TestDeserializationTime(jsonSerializer, jsonString);
-            TimeSpan protoBufSerializationTime = program.TestSerializationTime(protoBufSerializer, weatherForecast);
-            TimeSpan protoBufDeserializationTime = program.TestDeserializationTime(protoBufSerializer, protoBufbyteArray);
+            TimeSpan jsonSerializationTime = TestSerializationTime(jsonSerializer, weatherForecast);
+            TimeSpan jsonDeserializationTime = TestDeserializationTime(jsonSerializer, jsonString);
+            TimeSpan protoBufSerializationTime = TestSerializationTime(protoBufSerializer, weatherForecast);
+            TimeSpan protoBufDeserializationTime = TestDeserializationTime(protoBufSerializer, protoBufbyteArray);
 
-            TimeSpan jsonCachedServiceExecutionTime = program.TestWeatherForecastService(jsonCachedService);
-            TimeSpan protoBufCachedServiceExecutionTime = program.TestWeatherForecastService(protoCachedService);
+            TimeSpan jsonCachedServiceExecutionTime = TestWeatherForecastService(jsonCachedService);
+            TimeSpan protoBufCachedServiceExecutionTime = TestWeatherForecastService(protoCachedService);
 
-            outputBuilder.AppendLine($"Serialized Json size: {program.GetStringSize(jsonString)}")
-                         .AppendLine($"Serialized ProtoBuf size: {program.GetByteArraySize(protoBufbyteArray)}")
+            outputBuilder.AppendLine($"Serialized Json size: {GetStringSize(jsonString)}")
+                         .AppendLine($"Serialized ProtoBuf size: {GetByteArraySize(protoBufbyteArray)}")
                          .AppendLine($"Json serialization time: {jsonSerializationTime}")
                          .AppendLine($"ProtoBuf serialization time: {protoBufSerializationTime}")
                          .AppendLine($"Json deserialization time: {jsonDeserializationTime}")
