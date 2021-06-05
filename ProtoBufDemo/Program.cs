@@ -15,53 +15,39 @@ namespace ProtoBufDemo
         public static void Main()
         {
             var program = new Program();
-            program.Start();
-        }
+            var bootstrap = new Bootstrap(FORECAST_CREATION_DELAY);
 
-        public void Start() {
-            Bootstrap bootstrap = new Bootstrap(FORECAST_CREATION_DELAY);
+            WeatherForecast weatherForecast = bootstrap.CreateWeatherForecast();
 
             JsonSerializer<WeatherForecast> jsonSerializer = bootstrap.CreateJsonSerializer();
-            CachedWeatherForecastService<string> jsonCachedService = bootstrap.CreateCachedService(jsonSerializer);
+            Console.WriteLine("Json");
+            program.TestAll(weatherForecast, jsonSerializer, bootstrap.CreateCachedService(jsonSerializer));
 
             ProtoBufSerializer<WeatherForecast> protoBufSerializer = bootstrap.CreateProtoBufSerializer();
-            CachedWeatherForecastService<byte[]> protoCachedService = bootstrap.CreateCachedService(protoBufSerializer);
+            Console.WriteLine("ProtoBuf");
+            program.TestAll(weatherForecast, protoBufSerializer, bootstrap.CreateCachedService(protoBufSerializer));
+        }
+
+        private void TestAll<T>(WeatherForecast weatherForecast, ISerializer<WeatherForecast, T> serializer, IWeatherForecastAsyncProvider weatherForecastService)
+        {
+            T serialized = serializer.Serialize(weatherForecast);
+            WeatherForecast deserialized = serializer.Deserialize(serialized);
+
+            TimeSpan serializationTime = TestSerializationTime(serializer, weatherForecast);
+            TimeSpan deserializationTime = TestDeserializationTime(serializer, serialized);
+
+            TimeSpan executionTime = TestWeatherForecastService(weatherForecastService);
 
             var outputBuilder = new StringBuilder();
-
-            var weatherForecast = new WeatherForecast()
-            {
-                Date = DateTime.Today,
-                TemperatureC = 22,
-                Summary = WeatherForecastSummary.Mild
-            };
-
-            string jsonString = jsonSerializer.Serialize(weatherForecast);
-            WeatherForecast deserializedJsonWeatherForecast = jsonSerializer.Deserialize(jsonString);
-            byte[] protoBufbyteArray = protoBufSerializer.Serialize(weatherForecast);
-            WeatherForecast deserializedProtoBufWeatherForecast = protoBufSerializer.Deserialize(protoBufbyteArray);
-
-            TimeSpan jsonSerializationTime = TestSerializationTime(jsonSerializer, weatherForecast);
-            TimeSpan jsonDeserializationTime = TestDeserializationTime(jsonSerializer, jsonString);
-            TimeSpan protoBufSerializationTime = TestSerializationTime(protoBufSerializer, weatherForecast);
-            TimeSpan protoBufDeserializationTime = TestDeserializationTime(protoBufSerializer, protoBufbyteArray);
-
-            TimeSpan jsonCachedServiceExecutionTime = TestWeatherForecastService(jsonCachedService);
-            TimeSpan protoBufCachedServiceExecutionTime = TestWeatherForecastService(protoCachedService);
-
-            outputBuilder.AppendLine($"Serialized Json size: {GetStringSize(jsonString)}")
-                         .AppendLine($"Serialized ProtoBuf size: {GetByteArraySize(protoBufbyteArray)}")
-                         .AppendLine($"Json serialization time: {jsonSerializationTime}")
-                         .AppendLine($"ProtoBuf serialization time: {protoBufSerializationTime}")
-                         .AppendLine($"Json deserialization time: {jsonDeserializationTime}")
-                         .AppendLine($"ProtoBuf deserialization time: {protoBufDeserializationTime}")
-                         .AppendLine($"Deserialized values equal: {deserializedJsonWeatherForecast.Equals(deserializedProtoBufWeatherForecast)}")
-                         .AppendLine($"Json caching execution time: {jsonCachedServiceExecutionTime}")
-                         .AppendLine($"ProtoBuf caching execution time: {protoBufCachedServiceExecutionTime}");
+            outputBuilder.AppendLine($"Serialized size: {GetSize(serialized)}")
+                         .AppendLine($"Serialization time: {serializationTime}")
+                         .AppendLine($"Deserialization time: {deserializationTime}")
+                         .AppendLine($"Deserialized value correct: {deserialized.Equals(weatherForecast)}")
+                         .AppendLine($"Json caching execution time: {executionTime}");
             Console.WriteLine(outputBuilder);
         }
 
-        public TimeSpan TestSerializationTime<T>(ISerializer<WeatherForecast, T> serializer, WeatherForecast weatherForecast)
+        private TimeSpan TestSerializationTime<T>(ISerializer<WeatherForecast, T> serializer, WeatherForecast weatherForecast)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -87,7 +73,7 @@ namespace ProtoBufDemo
             return stopwatch.Elapsed;
         }
 
-        public TimeSpan TestWeatherForecastService(IWeatherForecastAsyncProvider service)
+        private TimeSpan TestWeatherForecastService(IWeatherForecastAsyncProvider service)
         {
             var initialDay = DateTime.Today;
             var days = Enumerable.Range(0, 7).Select(dayNumber => initialDay.AddDays(dayNumber));
@@ -106,8 +92,15 @@ namespace ProtoBufDemo
             return stopwatch.Elapsed;
         }
 
-        public int GetStringSize(string stringToMeasure) => sizeof(char) * stringToMeasure.Length;
+        private int GetSize<T>(T toMeasure) => toMeasure switch
+        {
+            byte[] bytesToMeasure => GetByteArraySize(bytesToMeasure),
+            string stringToMeasure => GetStringSize(stringToMeasure),
+            _ => throw new ArgumentException()
+        };
 
-        public int GetByteArraySize(byte[] byteArrayToMeasure) => sizeof(byte) * byteArrayToMeasure.Length;
+        private int GetStringSize(string stringToMeasure) => sizeof(char) * stringToMeasure.Length;
+
+        private int GetByteArraySize(byte[] bytesToMeasure) => sizeof(byte) * bytesToMeasure.Length;
     }
 }

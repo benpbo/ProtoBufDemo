@@ -24,6 +24,13 @@ namespace ProtoBufDemo
                 CreateWeatherForecastProvider());
         }
 
+        public WeatherForecast CreateWeatherForecast() => new WeatherForecast()
+        {
+            Date = DateTime.Today,
+            TemperatureC = 22,
+            Summary = WeatherForecastSummary.Mild
+        };
+
         private IStorage<DateTime, T> CreateStorage<T>() => new InMemoryStorage<DateTime, T>();
 
         private IWeatherForecastAsyncProvider CreateWeatherForecastProvider() => new WeatherForecastService(_forecastCreationDelay);
