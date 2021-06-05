@@ -8,25 +8,16 @@ namespace ProtoBufDemo
     {
         private readonly IDictionary<K, V> data = new Dictionary<K, V>();
 
-        private readonly int _storeDelay;
-        private readonly int _retrieveDelay;
-
-        public InMemoryStorage(int storeDelay, int retrieveDelay)
+        public InMemoryStorage()
         {
-           _storeDelay = storeDelay;
-           _retrieveDelay = retrieveDelay;
         }
 
-        public async Task<V> Retrieve(K key)
-        {
-            await Task.Delay(_retrieveDelay);
-            return data.TryGetValue(key, out V value) ? value : default;
-        }
+        public Task<V> Retrieve(K key) => Task.FromResult(data.TryGetValue(key, out V value) ? value : default);
 
-        public async Task Store(K key, V value)
+        public Task Store(K key, V value)
         {
-            await Task.Delay(_storeDelay);
             data[key] = value;
+            return Task.CompletedTask;
         }
     }
 }
