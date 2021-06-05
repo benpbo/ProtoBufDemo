@@ -19,7 +19,7 @@ namespace ProtoBufDemo
         public async Task<WeatherForecast> GetForecastAsync(DateTime forecastDate)
         {
             await Task.Delay(_forecastCreationDelay);
-            var _rng = new Random();
+            var _rng = new Random(forecastDate.DayOfYear);
             int summaryIndex = _rng.Next(_summaries.Length);
             return new WeatherForecast()
             {
